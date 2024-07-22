@@ -9,7 +9,7 @@ import BookList from './bookList';
 import BookForm from './bookForm';
 import SettingsScreen from './settingsScreen';
 import BookDetails from './bookDetails';
-import { useTheme } from '@/components/ThemeContent'; // Import useTheme hook
+import { useTheme } from '@/components/ThemeContent'; 
 import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 
 const Drawer = createDrawerNavigator();
@@ -39,7 +39,7 @@ const Layout = () => {
                         drawerIcon: () => (
                             <Ionicons name="home" size={24} color={theme === 'dark' ? 'white' : 'black'} />
                         ),
-                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, // Adjust label color
+                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, 
                     }}
                 />
                 <Drawer.Screen
@@ -51,7 +51,7 @@ const Layout = () => {
                         drawerIcon: () => (
                             <Feather name="edit" size={24} color={theme === 'dark' ? 'white' : 'black'} />
                         ),
-                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, // Adjust label color
+                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, 
                     }}
                 />
                 <Drawer.Screen
@@ -63,22 +63,21 @@ const Layout = () => {
                         drawerIcon: () => (
                             <FontAwesome name="book" size={24} color={theme === 'dark' ? 'white' : 'black'} />
                         ),
-                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, // Adjust label color
+                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, 
                     }}
                 />
                 <Drawer.Screen
                     name="Setting"
+                    component={SettingsScreen}
                     options={{
                         drawerLabel: 'Setting',
                         title: 'Setting',
                         drawerIcon: () => (
                             <AntDesign name="setting" size={24} color={theme === 'dark' ? 'white' : 'black'} />
                         ),
-                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, // Adjust label color
+                        drawerLabelStyle: { color: theme === 'dark' ? 'white' : 'black' }, 
                     }}
-                >
-                    {() => <SettingsScreen />}
-                </Drawer.Screen>
+                />
             </Drawer.Navigator>
         </GestureHandlerRootView>
     );

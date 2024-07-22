@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, FlatList, StyleSheet } from 'react-native';
 import { List, useTheme } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getDBConnection, getBooks } from '@/components/database';
 
 export default function BookList({ navigation }) {
   const theme = useTheme(); // Access the current theme's colors
@@ -10,10 +10,9 @@ export default function BookList({ navigation }) {
   useEffect(() => {
     const loadBooks = async () => {
       try {
-        const storedBooks = await AsyncStorage.getItem('bookStorage');
-        if (storedBooks) {
-          setBooks(JSON.parse(storedBooks));
-        }
+         const db = await getDBConnection();
+         const storedBooks = await getBooks(db);
+         setBooks(storedBooks);
       } catch (error) {
         console.log(error);
       }

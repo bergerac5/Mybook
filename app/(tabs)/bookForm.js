@@ -13,8 +13,6 @@ const BookForm = ({ navigation, route }) => {
   const [bookId, setBookId] = useState(null);
 
   useEffect(() => {
-    console.log(route.params); // Check what is being passed in route.params
-
     if (route.params && route.params.book) {
       const { book } = route.params;
       if (book) {
@@ -61,17 +59,16 @@ const BookForm = ({ navigation, route }) => {
       alert("Book status cannot be empty.");
     } else {
       try {
-        const db = await getDBConnection();
         const book = { id: bookId, title, author, rating, status };
         if (isEdit) {
           if (bookId) {
-            await updateBook(db, book);
+            await updateBook(book);
           } else {
             console.error('Book ID is missing');
             alert('Failed to update book. Book ID is missing.');
           }
         } else {
-          await saveBook(db, { title, author, rating, status });
+          await saveBook({ title, author, rating, status });
         }
         // Clear input fields and reset state
         setTitle('');
@@ -82,7 +79,8 @@ const BookForm = ({ navigation, route }) => {
         setIsEdit(false);
         navigation.navigate('Home');
       } catch (error) {
-        console.log(error);
+        console.error('Failed to save or update book:', error);
+        alert('An error occurred while saving the book. Please try again.');
       }
     }
   };

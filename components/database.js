@@ -2,13 +2,18 @@ import * as SQLite from 'expo-sqlite';
 
 
 const database_name = "BookDB.db";
+let dbInstance = null;
 
 // Function to get a connection to the database
 export const getDBConnection = async () => {
+    if (dbInstance) {
+        return dbInstance;
+    }
     try {
-        const db = SQLite.openDatabaseAsync(database_name); // Ensure this matches your version
+        dbInstance = SQLite.openDatabaseAsync(database_name); // Ensure this matches your version
         console.log('Database opened successfully');
-        return db;
+        await createTable(dbInstance);
+        return dbInstance;
     } catch (error) {
         console.error('Failed to open database:', error);
         throw error;
@@ -17,8 +22,9 @@ export const getDBConnection = async () => {
 
 
 // Function to initialize the database and create the table
-export const createTable = async (db) => {
+export const createTable = async () => {
     try {
+        const db = await getDBConnection();
         // Execute SQL command to create the table and set the journal mode
          db.execAsync(`
             PRAGMA journal_mode = WAL;
@@ -38,8 +44,10 @@ export const createTable = async (db) => {
 };
 
 // Function to get all books from the database
-export const getBooks = async (db) => {
+export const getBooks = async () => {
+    
     try {
+        const db = await getDBConnection();
         const books = await db.getAllAsync('SELECT * FROM Books');
         return books;
     } catch (error) {
@@ -50,7 +58,11 @@ export const getBooks = async (db) => {
 };
 
 // Function to save a new book to the database
-export const saveBook = async (db, book) => {
+export const saveBook = async (book) => {
+    if (!book.title || !book.author || !book.rating || !book.status) {
+        throw new Error('ID, title, author, rating, and status are required.');
+    }
+    const db = await getDBConnection();
     try {
         const result = await db.runAsync('INSERT INTO Books (title, author, rating, status) VALUES (?, ?, ?, ?)', [book.title, book.author, book.rating, book.status]);
         console.log('Book saved successfully with ID:', result.lastInsertRowId);
@@ -61,8 +73,9 @@ export const saveBook = async (db, book) => {
 };
 
 // Function to update an existing book in the database
-export const updateBook = async (db, book) => {
+export const updateBook = async (book) => {
     try {
+        const db = await getDBConnection();
       const { id, title, author, rating, status } = book;
       await db.runAsync(
         'UPDATE Books SET title = ?, author = ?, rating = ?, status = ? WHERE id = ?',
@@ -76,8 +89,9 @@ export const updateBook = async (db, book) => {
 };
 
 // Function to delete a book from the database
-export const deleteBook = async (db, id) => {
+export const deleteBook = async ( id) => {
     try {
+        const db = await getDBConnection();
         await db.runAsync('DELETE FROM Books WHERE id = ?', [id]);
         console.log('Book deleted successfully');
     } catch (error) {

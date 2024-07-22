@@ -93,7 +93,7 @@ export default function BookDetails({ navigation }) {
   const handleDelete = async (id) => {
     try {
       const db = await getDBConnection();
-      await deleteBook(db, id);
+      await deleteBook(id);
       const updatedBooks = books.filter((book) => book.id !== id);
       setBooks(updatedBooks);
       sortAndFilterBooks(updatedBooks, sortingPreference, searchQuery);
@@ -103,6 +103,7 @@ export default function BookDetails({ navigation }) {
   };
 
   const confirmDelete = (id) => {
+    console.log(id);
     Alert.alert(
       "Delete Book",
       "Are you sure you want to delete this book?",
@@ -114,6 +115,7 @@ export default function BookDetails({ navigation }) {
     );
   };
 
+  //render object
   const renderItem = ({ item }) => (
     <List.Item
       title={`Title: ${item.title}`}

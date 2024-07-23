@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Feather } from '@expo/vector-icons';
 import { AntDesign } from '@expo/vector-icons';
 import BookList from './bookList';
-import BookForm from './bookForm';
+import BookForm from './bookForm'; // Ensure correct import
 import SettingsScreen from './settingsScreen';
 import BookDetails from './bookDetails';
 import { useTheme } from '@/components/ThemeContent'; 
@@ -44,7 +44,7 @@ const Layout = () => {
                 />
                 <Drawer.Screen
                     name="Edit"
-                    component={BookForm}
+                    component={BookForm} // Ensure correct component assignment
                     options={{
                         drawerLabel: 'Book Manipulation',
                         title: 'Manipulation',

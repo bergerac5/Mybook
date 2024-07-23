@@ -10,9 +10,10 @@ import {
 } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getDBConnection, getBooks, deleteBook } from "@/components/database";
+import { Rating } from 'react-native-ratings';
 
 export default function BookDetails({ navigation }) {
-  const theme = useTheme(); // Access the current theme's colors
+  const theme = useTheme();
   const [books, setBooks] = useState([]);
   const [sortingPreference, setSortingPreference] = useState("title");
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,7 +52,7 @@ export default function BookDetails({ navigation }) {
 
   useEffect(() => {
     sortAndFilterBooks(books, sortingPreference, searchQuery);
-  }, [sortingPreference, searchQuery]);
+  }, [books, sortingPreference, searchQuery]);
 
   const sortAndFilterBooks = (books, preference, query) => {
     let sortedBooks = [...books];
@@ -87,9 +88,9 @@ export default function BookDetails({ navigation }) {
 
   const filterBooks = (query) => {
     setSearchQuery(query);
+    sortAndFilterBooks(books, sortingPreference, query);
   };
 
-  // delete function
   const handleDelete = async (id) => {
     try {
       const db = await getDBConnection();
@@ -103,7 +104,6 @@ export default function BookDetails({ navigation }) {
   };
 
   const confirmDelete = (id) => {
-    console.log(id);
     Alert.alert(
       "Delete Book",
       "Are you sure you want to delete this book?",
@@ -115,7 +115,6 @@ export default function BookDetails({ navigation }) {
     );
   };
 
-  //render object
   const renderItem = ({ item }) => (
     <List.Item
       title={`Title: ${item.title}`}
@@ -124,8 +123,22 @@ export default function BookDetails({ navigation }) {
       right={() => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <PaperText style={{ color: theme.colors.text }}>Rating: {item.rating}/5</PaperText>
-            <PaperText style={{ color: theme.colors.text }}>Status: {item.status}</PaperText>
+            <Rating
+              type='star'
+              ratingCount={5}
+              imageSize={20}
+              startingValue={item.rating}
+              readonly
+              style={styles.rating}
+            />
+            <PaperText
+              style={{
+                color: item.status === 'unread' ? 'red' : 'blue',
+                marginVertical: 5,
+              }}
+            >
+              Status: {item.status}
+            </PaperText>
           </View>
           <IconButton
             icon="pencil"
@@ -176,8 +189,7 @@ export default function BookDetails({ navigation }) {
       <FlatList
         data={filteredBooks}
         renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        style={{ color: theme.colors.text }}
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );
@@ -194,5 +206,8 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     margin: 10,
+  },
+  rating: {
+    marginVertical: 5,
   },
 });

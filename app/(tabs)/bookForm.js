@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, Text } from 'react-native';
 import { TextInput as PaperTextInput, Button as PaperButton, useTheme } from 'react-native-paper';
 import { getDBConnection, saveBook, updateBook } from '@/components/database';
+import { Rating } from 'react-native-ratings';
 
 const BookForm = ({ navigation, route }) => {
   const theme = useTheme();
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
-  const [rating, setRating] = useState('');
+  const [rating, setRating] = useState(0); // Initialize as a number
   const [status, setStatus] = useState('');
   const [isEdit, setIsEdit] = useState(false);
   const [bookId, setBookId] = useState(null);
@@ -18,7 +19,7 @@ const BookForm = ({ navigation, route }) => {
       if (book) {
         setTitle(book.title || '');
         setAuthor(book.author || '');
-        setRating(book.rating ? book.rating.toString() : '');
+        setRating(book.rating || 0); // Ensure default is a number
         setStatus(book.status || '');
         setBookId(book.id);
         setIsEdit(true);
@@ -53,8 +54,8 @@ const BookForm = ({ navigation, route }) => {
       alert("Book title must have at least 3 characters.");
     } else if (author.length < 3) {
       alert("Author name must have at least 3 characters.");
-    } else if (rating.length === 0) {
-      alert("Book rating cannot be empty.");
+    } else if (rating <= 0) {
+      alert("Book rating must be greater than 0.");
     } else if (status.length === 0) {
       alert("Book status cannot be empty.");
     } else {
@@ -73,7 +74,7 @@ const BookForm = ({ navigation, route }) => {
         // Clear input fields and reset state
         setTitle('');
         setAuthor('');
-        setRating('');
+        setRating(0);
         setStatus('');
         setBookId(null);
         setIsEdit(false);
@@ -109,16 +110,7 @@ const BookForm = ({ navigation, route }) => {
         mode="outlined"
         style={styles.input}
         theme={{ colors: { text: theme.colors.text, primary: theme.colors.primary } }}
-      />
-      <PaperTextInput
-        label="Rate"
-        keyboardType="numeric"
-        value={rating}
-        onChangeText={setRating}
-        mode="outlined"
-        style={styles.input}
-        theme={{ colors: { text: theme.colors.text, primary: theme.colors.primary } }}
-      />
+      />      
       <PaperTextInput
         label="Status"
         value={status}
@@ -127,6 +119,17 @@ const BookForm = ({ navigation, route }) => {
         style={styles.input}
         theme={{ colors: { text: theme.colors.text, primary: theme.colors.primary } }}
       />
+      <View style={styles.ratingContainer}>
+        <Text style ={{ colors: { text: theme.colors.text, primary: theme.colors.primary } }}>Rating</Text>
+        <Rating
+          type='star'
+          ratingCount={5}
+          imageSize={30}
+          startingValue={rating}
+          onFinishRating={setRating}
+          style={styles.rating}
+        />
+      </View>      
       <PaperButton
         mode="contained"
         onPress={isEdit ? confirmUpdate : confirmSave}
@@ -146,6 +149,16 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
+  },
+  ratingContainer: {
+    marginBottom: 16,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    border: 1,
+  },
+  rating: {
+    alignSelf: 'center',
   },
   button: {
     marginTop: 16,

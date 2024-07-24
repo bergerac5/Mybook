@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, FlatList, Alert } from "react-native";
+import { StyleSheet, View, FlatList, Alert, Image } from "react-native";
 import {
   List,
   Text as PaperText,
@@ -117,12 +117,26 @@ export default function BookDetails({ navigation }) {
 
   const renderItem = ({ item }) => (
     <List.Item
-      title={`Title: ${item.title}`}
-      description={`Author: ${item.author}`}
-      left={() => <List.Icon icon="book" color={theme.colors.text} />}
-      right={() => (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+      left={() => (
+        <View style={styles.leftContainer}>
+          {item.photoUri ? (
+            <Image
+              source={{ uri: item.photoUri }}
+              style={styles.image}
+              resizeMode="cover"
+            />
+          ) : (
+            <List.Icon icon="book" color={theme.colors.text} />
+          )}
+          <View style={styles.infoContainer}>
+            <PaperText style={styles.titleText}>Title: {item.title}</PaperText>
+            <PaperText style={styles.authorText}>Author: {item.author}</PaperText>
+            <PaperText style={[
+              styles.statusText,
+              { color: item.status === 'unread' ? 'red' : 'blue' }
+            ]}>
+              Status: {item.status}
+            </PaperText>
             <Rating
               type='star'
               ratingCount={5}
@@ -131,23 +145,19 @@ export default function BookDetails({ navigation }) {
               readonly
               style={styles.rating}
             />
-            <PaperText
-              style={{
-                color: item.status === 'unread' ? 'red' : 'blue',
-                marginVertical: 5,
-              }}
-            >
-              Status: {item.status}
-            </PaperText>
           </View>
+        </View>
+      )}
+      right={() => (
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <IconButton
             icon="pencil"
-            color={theme.colors.text}
+            color="#00ffff" // Aqua color for edit icon
             onPress={() => navigation.navigate('Edit', { book: item })}
           />
           <IconButton
             icon="delete"
-            color={theme.colors.text}
+            color="#ff0000" // Red color for delete icon
             onPress={() => confirmDelete(item.id)}
           />
         </View>
@@ -155,7 +165,7 @@ export default function BookDetails({ navigation }) {
       style={{ backgroundColor: theme.colors.background }}
     />
   );
-
+  
   return (
     <View
       style={[styles.container, { backgroundColor: theme.colors.background }]}
@@ -208,6 +218,30 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   rating: {
+    marginVertical: 5,
+  },
+  image: {
+    width: 200,   // Increased width
+    height: 300,  // Increased height
+    borderRadius: 10, // Optional: increased border radius for rounded corners
+    margin: 5,
+  },
+  leftContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  infoContainer: {
+    marginTop: 10, // Space between the image and text
+    alignItems: 'center',
+  },
+  titleText: {
+    fontWeight: 'bold',
+  },
+  authorText: {
+    color: 'gray',
+  },
+  statusText: {
     marginVertical: 5,
   },
 });

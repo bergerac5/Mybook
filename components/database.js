@@ -1,7 +1,7 @@
 import * as SQLite from 'expo-sqlite';
 
 
-const database_name = "BookDB.db";
+const database_name = "BooksDB.db";
 let dbInstance = null;
 
 // Function to get a connection to the database
@@ -21,27 +21,26 @@ export const getDBConnection = async () => {
 };
 
 
-// Function to initialize the database and create the table
 export const createTable = async () => {
     try {
-        const db = await getDBConnection();
-        // Execute SQL command to create the table and set the journal mode
-         db.execAsync(`
-            PRAGMA journal_mode = WAL;
-            CREATE TABLE IF NOT EXISTS Books (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                title TEXT NOT NULL,
-                author TEXT NOT NULL,
-                rating INTEGER NOT NULL,
-                status TEXT NOT NULL
-            );
-        `);
-        console.log('Table created successfully');
+      const db = await getDBConnection();
+      db.execAsync(`
+        PRAGMA journal_mode = WAL;
+        CREATE TABLE IF NOT EXISTS Books (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          author TEXT NOT NULL,
+          rating INTEGER NOT NULL,
+          status TEXT NOT NULL,
+          photoUri TEXT
+        );
+      `);
+      console.log('Table created successfully');
     } catch (error) {
-        console.error('Failed to create table:', error);
-        throw error;
+      console.error('Failed to create table:', error);
+      throw error;
     }
-};
+  };  
 
 // Function to get all books from the database
 export const getBooks = async () => {
@@ -59,34 +58,35 @@ export const getBooks = async () => {
 
 // Function to save a new book to the database
 export const saveBook = async (book) => {
-    if (!book.title || !book.author || !book.rating || !book.status) {
-        throw new Error('ID, title, author, rating, and status are required.');
+    const { title, author, rating, status, photoUri } = book;
+    if (!title || !author || !rating || !status) {
+      throw new Error('Title, author, rating, and status are required.');
     }
     const db = await getDBConnection();
     try {
-        const result = await db.runAsync('INSERT INTO Books (title, author, rating, status) VALUES (?, ?, ?, ?)', [book.title, book.author, book.rating, book.status]);
-        console.log('Book saved successfully with ID:', result.lastInsertRowId);
+      const result = await db.runAsync('INSERT INTO Books (title, author, rating, status, photoUri) VALUES (?, ?, ?, ?, ?)', [title, author, rating, status, photoUri]);
+      console.log('Book saved successfully with ID:', result.lastInsertRowId);
     } catch (error) {
-        console.error('Failed to save book:', error);
-        throw error;
+      console.error('Failed to save book:', error);
+      throw error;
     }
-};
-
-// Function to update an existing book in the database
-export const updateBook = async (book) => {
+  };
+  
+  // Function to update an existing book in the database
+  export const updateBook = async (book) => {
+    const { id, title, author, rating, status, photoUri } = book;
+    if (!id || !title || !author || !rating || !status) {
+      throw new Error('ID, title, author, rating, and status are required.');
+    }
+    const db = await getDBConnection();
     try {
-        const db = await getDBConnection();
-      const { id, title, author, rating, status } = book;
-      await db.runAsync(
-        'UPDATE Books SET title = ?, author = ?, rating = ?, status = ? WHERE id = ?',
-        [title, author, rating, status, id]
-      );
+      await db.runAsync('UPDATE Books SET title = ?, author = ?, rating = ?, status = ?, photoUri = ? WHERE id = ?', [title, author, rating, status, photoUri, id]);
       console.log('Book updated successfully');
     } catch (error) {
       console.error('Failed to update book:', error);
       throw error;
     }
-};
+  };
 
 // Function to delete a book from the database
 export const deleteBook = async ( id) => {

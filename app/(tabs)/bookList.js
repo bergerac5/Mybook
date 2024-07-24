@@ -1,21 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, StyleSheet, Image } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, FlatList, StyleSheet, Image, ActivityIndicator, Text } from 'react-native';
 import { List, useTheme } from 'react-native-paper';
-import { getDBConnection, getBooks } from '@/components/database';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchBooks } from '@/components/redux/bookReducer';
 
 export default function BookList({ navigation }) {
   const theme = useTheme(); // Access the current theme's colors
-  const [books, setBooks] = useState([]);
+  const dispatch = useDispatch();
+  const { books, loading, error } = useSelector((state) => state.books);
 
   useEffect(() => {
     const loadBooks = async () => {
-      try {
-        const db = await getDBConnection();
-        const storedBooks = await getBooks(db);
-        setBooks(storedBooks);
-      } catch (error) {
-        console.log(error);
-      }
+      dispatch(fetchBooks());
     };
 
     const unsubscribe = navigation.addListener('focus', () => {
@@ -23,7 +19,7 @@ export default function BookList({ navigation }) {
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, [dispatch, navigation]);
 
   const navigateToBookDetails = (item) => {
     navigation.navigate('Detail', { book: item }); // Navigate to 'Detail' screen with book details
@@ -50,8 +46,23 @@ export default function BookList({ navigation }) {
     />
   );
 
+  if (loading) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <Text style={{ color: theme.colors.text }}>{`Error: ${error}`}</Text>
+      </View>
+    );
+  }
+
   return (
-    
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <FlatList
         data={books}
@@ -66,6 +77,8 @@ export default function BookList({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   listContainer: {
     padding: 10,

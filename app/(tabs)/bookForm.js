@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -12,13 +12,15 @@ import {
   Button as PaperButton,
   useTheme,
 } from "react-native-paper";
-import { saveBook, updateBook } from "@/components/database";
+import { useDispatch, useSelector } from 'react-redux';
+import { addBook, updateBook } from '@/components/redux/bookReducer';
 import { Rating } from "react-native-ratings";
 import * as ImagePicker from "expo-image-picker";
 import Checkbox from "expo-checkbox";
 
 const BookForm = ({ navigation, route }) => {
   const theme = useTheme();
+  const dispatch = useDispatch();
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [rating, setRating] = useState(0);
@@ -36,7 +38,7 @@ const BookForm = ({ navigation, route }) => {
         setRating(book.rating || 0);
         setStatus(book.status || "unread");
         setPhotoUri(book.photoUri || null);
-        setBookId(book.id);
+        setBookId(book.id || null); // Ensure bookId is set to null if not provided
         setIsEdit(true);
       }
     }
@@ -73,7 +75,7 @@ const BookForm = ({ navigation, route }) => {
     );
   };
 
-  const saveBookData = async () => {
+   saveBookData = async () => {
     if (title.length < 3) {
       alert("Book title must have at least 3 characters.");
     } else if (author.length < 3) {
@@ -82,17 +84,31 @@ const BookForm = ({ navigation, route }) => {
       alert("Book rating must be greater than 0.");
     } else {
       try {
-        const book = { id: bookId, title, author, rating, status, photoUri };
+        // Log bookId to check its value
+        console.log("Saving book with ID:", bookId);
+  
+        // Ensure bookId is defined before using it
+        const book = {
+          id: bookId || null, // Set id to null if bookId is undefined
+          title,
+          author,
+          rating,
+          status,
+          photoUri,
+        };
+  
         if (isEdit) {
           if (bookId) {
-            await updateBook(book);
+            await dispatch(updateBook(book)).unwrap();
           } else {
             console.error("Book ID is missing");
             alert("Failed to update book. Book ID is missing.");
           }
         } else {
-          await saveBook({ title, author, rating, status, photoUri });
+          await dispatch(addBook({ title, author, rating, status, photoUri })).unwrap();
         }
+  
+        // Reset form after saving/updating
         setTitle("");
         setAuthor("");
         setRating(0);
@@ -100,6 +116,8 @@ const BookForm = ({ navigation, route }) => {
         setPhotoUri(null);
         setBookId(null);
         setIsEdit(false);
+  
+        // Navigate to Home
         navigation.navigate("Home");
       } catch (error) {
         console.error("Failed to save or update book:", error);
@@ -115,7 +133,7 @@ const BookForm = ({ navigation, route }) => {
       >
         <PaperTextInput
           label="Book ID"
-          value={bookId ? bookId.toString() : ""}
+          value={bookId != null ? bookId.toString() : ""}
           editable={false}
           style={[styles.input, { height: 0, width: 0, opacity: 0 }]}
           theme={{
@@ -142,10 +160,15 @@ const BookForm = ({ navigation, route }) => {
             colors: { text: theme.colors.text, primary: theme.colors.primary },
           }}
         />
-        <View style={styles.checkboxContainer}
-        >
+        <View style={styles.checkboxContainer}>
           <Text style={{ color: theme.colors.text }}>Status</Text>
-          <View style={{display:"flex", flexDirection: 'row', justifyContent: 'space-betweenS'}}>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
             <Text style={{ color: theme.colors.text }}>Read</Text>
             <Checkbox
               value={status === "read"}
@@ -203,9 +226,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 16,
     padding: 5,
-    borderWidth: 1, // Add border width
-    borderColor: "#ccc", // Add border color (gray)
-    borderRadius: 5, // Optional: Add border radius for rounded corners
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
     height: 50
   },
   ratingContainer: {

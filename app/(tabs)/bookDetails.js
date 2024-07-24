@@ -8,16 +8,23 @@ import {
   IconButton,
   Button,
 } from "react-native-paper";
-import { useSelector, useDispatch } from 'react-redux';
-import { fetchBooks, setSortingPreference, setSearchQuery, deleteBook } from '@/components/redux/bookReducer';
-import { Rating } from 'react-native-ratings';
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchBooks,
+  setSortingPreference,
+  setSearchQuery,
+  deleteBook,
+} from "@/components/redux/bookReducer";
+import { Rating } from "react-native-ratings";
 
 export default function BookDetails({ navigation }) {
   const theme = useTheme();
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
   const filteredBooks = useSelector((state) => state.books.filteredBooks);
-  const sortingPreference = useSelector((state) => state.books.sortingPreference);
+  const sortingPreference = useSelector(
+    (state) => state.books.sortingPreference
+  );
   const searchQuery = useSelector((state) => state.books.searchQuery || ""); // Ensure default value
   const loading = useSelector((state) => state.books.loading);
 
@@ -66,56 +73,65 @@ export default function BookDetails({ navigation }) {
     );
   };
 
-  const renderItem = ({ item }) => (
-    <List.Item
-      left={() => (
-        <View style={styles.leftContainer}>
-          {item.photoUri ? (
-            <Image
-              source={{ uri: item.photoUri }}
-              style={styles.image}
-              resizeMode="cover"
+  const renderItem = ({ item }) => {
+    //console.log("Rendering item:", item); // Add this line to check item structure
+    return (
+      <List.Item
+        left={() => (
+          <View style={styles.leftContainer}>
+            {item.photoUri ? (
+              <Image
+                source={{ uri: item.photoUri }}
+                style={styles.image}
+                resizeMode="cover"
+              />
+            ) : (
+              <List.Icon icon="book" color={theme.colors.text} />
+            )}
+            <View style={styles.infoContainer}>
+              <PaperText style={styles.titleText}>
+                Title: {item.title}
+              </PaperText>
+              <PaperText style={styles.authorText}>
+                Author: {item.author}
+              </PaperText>
+              <PaperText
+                style={[
+                  styles.statusText,
+                  { color: item.status === "unread" ? "red" : "blue" },
+                ]}
+              >
+                Status: {item.status}
+              </PaperText>
+              <Rating
+                type="star"
+                ratingCount={5}
+                imageSize={20}
+                startingValue={item.rating}
+                readonly
+                style={styles.rating}
+              />
+            </View>
+          </View>
+        )}
+        right={() => (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <IconButton
+              icon="pencil"
+              color="#00ffff"
+              onPress={() => navigation.navigate("Edit", { book: item })}
             />
-          ) : (
-            <List.Icon icon="book" color={theme.colors.text} />
-          )}
-          <View style={styles.infoContainer}>
-            <PaperText style={styles.titleText}>Title: {item.title}</PaperText>
-            <PaperText style={styles.authorText}>Author: {item.author}</PaperText>
-            <PaperText style={[
-              styles.statusText,
-              { color: item.status === 'unread' ? 'red' : 'blue' }
-            ]}>
-              Status: {item.status}
-            </PaperText>
-            <Rating
-              type='star'
-              ratingCount={5}
-              imageSize={20}
-              startingValue={item.rating}
-              readonly
-              style={styles.rating}
+            <IconButton
+              icon="delete"
+              color="#ff0000"
+              onPress={() => confirmDelete(item.id)}
             />
           </View>
-        </View>
-      )}
-      right={() => (
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <IconButton
-            icon="pencil"
-            color="#00ffff" // Aqua color for edit icon
-            onPress={() => navigation.navigate('Edit', { book: item })}
-          />
-          <IconButton
-            icon="delete"
-            color="#ff0000" // Red color for delete icon
-            onPress={() => confirmDelete(item.id)}
-          />
-        </View>
-      )}
-      style={{ backgroundColor: theme.colors.background }}
-    />
-  );
+        )}
+        style={{ backgroundColor: theme.colors.background }}
+      />
+    );
+  };
 
   return (
     <View
@@ -150,7 +166,7 @@ export default function BookDetails({ navigation }) {
       <FlatList
         data={filteredBooks}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => (item.id ? item.id.toString() : "0")} // Fallback to '0' if id is undefined
         ListEmptyComponent={<PaperText>No books available</PaperText>}
         refreshing={loading}
         onRefresh={() => dispatch(fetchBooks())}
@@ -175,25 +191,25 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
   image: {
-    width: 200,   // Increased width
-    height: 300,  // Increased height
+    width: 200, // Increased width
+    height: 300, // Increased height
     borderRadius: 10, // Optional: increased border radius for rounded corners
     margin: 5,
   },
   leftContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
   },
   infoContainer: {
     marginTop: 10, // Space between the image and text
-    alignItems: 'center',
+    alignItems: "center",
   },
   titleText: {
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   authorText: {
-    color: 'gray',
+    color: "gray",
   },
   statusText: {
     marginVertical: 5,

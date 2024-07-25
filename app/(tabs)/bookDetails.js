@@ -1,5 +1,14 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, FlatList, Alert, Image } from "react-native";
+import {
+  StyleSheet,
+  View,
+  FlatList,
+  Alert,
+  Image,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import {
   List,
   Text as PaperText,
@@ -14,8 +23,11 @@ import {
   setSortingPreference,
   setSearchQuery,
   deleteBook,
+  updateRatingStatus,
 } from "@/components/redux/bookReducer";
 import { Rating } from "react-native-ratings";
+import { Entypo } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function BookDetails({ navigation }) {
   const theme = useTheme();
@@ -74,104 +86,130 @@ export default function BookDetails({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
-    //console.log("Rendering item:", item); // Add this line to check item structure
     return (
-      <List.Item
-        left={() => (
-          <View style={styles.leftContainer}>
-            {item.photoUri ? (
-              <Image
-                source={{ uri: item.photoUri }}
-                style={styles.image}
-                resizeMode="cover"
+      <TouchableOpacity
+        onPress={async () => {
+          // Call updateRatingStatus when pressing on the book item
+          try {
+            navigation.navigate("BookDetail", { bookId: item.id });
+            await dispatch(
+              updateRatingStatus({
+                ...item, // Pass current book data
+                rating: item.rating,
+                status: "read",
+              })
+            ).unwrap();
+          } catch (error) {
+            console.log("Error updating book:", error);
+          }
+        }}
+      >
+        <List.Item
+          left={() => (
+            <View style={styles.leftContainer}>
+              {item.photoUri ? (
+                <Image
+                  source={{ uri: item.photoUri }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <List.Icon icon="book" color={theme.colors.text} />
+              )}
+              <View style={styles.infoContainer}>
+                <PaperText style={styles.titleText}>
+                  Title: {item.title}
+                </PaperText>
+                <PaperText style={styles.authorText}>
+                  Author: {item.author}
+                </PaperText>
+                <PaperText
+                  style={[
+                    styles.statusText,
+                    { color: item.status === "unread" ? "red" : "blue" },
+                  ]}
+                >
+                  Status: {item.status}
+                </PaperText>
+                <Rating
+                  type="star"
+                  ratingCount={5}
+                  imageSize={20}
+                  startingValue={item.rating}
+                  readonly
+                  style={styles.rating}
+                />
+              </View>
+            </View>
+          )}
+          right={() => (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Entypo
+                name="edit"
+                size={24}
+                color="aqua"
+                onPress={() => navigation.navigate("Edit", { book: item })}
+                style={{ marginRight: 40 }}
               />
-            ) : (
-              <List.Icon icon="book" color={theme.colors.text} />
-            )}
-            <View style={styles.infoContainer}>
-              <PaperText style={styles.titleText}>
-                Title: {item.title}
-              </PaperText>
-              <PaperText style={styles.authorText}>
-                Author: {item.author}
-              </PaperText>
-              <PaperText
-                style={[
-                  styles.statusText,
-                  { color: item.status === "unread" ? "red" : "blue" },
-                ]}
-              >
-                Status: {item.status}
-              </PaperText>
-              <Rating
-                type="star"
-                ratingCount={5}
-                imageSize={20}
-                startingValue={item.rating}
-                readonly
-                style={styles.rating}
+
+              <MaterialIcons
+                name="delete-forever"
+                size={24}
+                color="#ff0000"
+                onPress={() => confirmDelete(item.id)}
               />
             </View>
-          </View>
-        )}
-        right={() => (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <IconButton
-              icon="pencil"
-              color="#00ffff"
-              onPress={() => navigation.navigate("Edit", { book: item })}
-            />
-            <IconButton
-              icon="delete"
-              color="#ff0000"
-              onPress={() => confirmDelete(item.id)}
-            />
-          </View>
-        )}
-        style={{ backgroundColor: theme.colors.background }}
-      />
+          )}
+          style={{ backgroundColor: theme.colors.background }}
+        />
+      </TouchableOpacity>
     );
   };
 
   return (
-    <View
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
-    >
-      <TextInput
-        label="Search"
-        value={searchQuery}
-        onChangeText={filterBooks}
-        style={styles.searchBar}
-        theme={{
-          colors: { text: theme.colors.text, primary: theme.colors.primary },
-        }}
-      />
-      <View style={styles.sortingButtons}>
-        <Button mode="contained" onPress={() => saveSortingPreference("title")}>
-          Sort by Title
-        </Button>
-        <Button
-          mode="contained"
-          onPress={() => saveSortingPreference("author")}
-        >
-          Sort by Author
-        </Button>
-        <Button
-          mode="contained"
-          onPress={() => saveSortingPreference("rating")}
-        >
-          Sort by Rating
-        </Button>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+      <View
+        style={[styles.container, { backgroundColor: theme.colors.background }]}
+      >
+        <TextInput
+          label="Search"
+          value={searchQuery}
+          onChangeText={filterBooks}
+          style={styles.searchBar}
+          theme={{
+            colors: { text: theme.colors.text, primary: theme.colors.primary },
+          }}
+        />
+        <View style={styles.sortingButtons}>
+          <Button
+            mode="contained"
+            onPress={() => saveSortingPreference("title")}
+          >
+            Sort by Title
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => saveSortingPreference("author")}
+          >
+            Sort by Author
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => saveSortingPreference("rating")}
+          >
+            Sort by Rating
+          </Button>
+        </View>
+        <FlatList
+          data={filteredBooks}
+          renderItem={renderItem}
+          keyExtractor={(item) => (item.id ? item.id.toString() : "0")} // Fallback to '0' if id is undefined
+          ListEmptyComponent={<PaperText>No books available</PaperText>}
+          refreshing={loading}
+          onRefresh={() => dispatch(fetchBooks())}
+        />
       </View>
-      <FlatList
-        data={filteredBooks}
-        renderItem={renderItem}
-        keyExtractor={(item) => (item.id ? item.id.toString() : "0")} // Fallback to '0' if id is undefined
-        ListEmptyComponent={<PaperText>No books available</PaperText>}
-        refreshing={loading}
-        onRefresh={() => dispatch(fetchBooks())}
-      />
-    </View>
+    </TouchableWithoutFeedback>
   );
 }
 

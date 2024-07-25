@@ -5,7 +5,7 @@ import {
   Alert,
   Text,
   Image,
-  TouchableWithoutFeedback,
+  TouchableWithoutFeedback, Keyboard
 } from "react-native";
 import {
   TextInput as PaperTextInput,
@@ -80,8 +80,6 @@ const BookForm = ({ navigation, route }) => {
       alert("Book title must have at least 3 characters.");
     } else if (author.length < 3) {
       alert("Author name must have at least 3 characters.");
-    } else if (rating <= 0) {
-      alert("Book rating must be greater than 0.");
     } else {
       try {
         // Log bookId to check its value
@@ -127,7 +125,7 @@ const BookForm = ({ navigation, route }) => {
   };
 
   return (
-    <TouchableWithoutFeedback>
+    <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
       <View
         style={[styles.container, { backgroundColor: theme.colors.background }]}
       >

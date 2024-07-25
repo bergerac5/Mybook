@@ -31,8 +31,8 @@ export default function BookList({ navigation }) {
       description={item.author}
       onPress={() => navigateToBookDetails(item)} // Pass the book item to navigateToBookDetails
       titleStyle={{ color: theme.colors.text }} // Apply theme-based text color
-      descriptionStyle={{ color: theme.colors.text }} // Apply theme-based text color
-      style={[styles.item, { backgroundColor: theme.colors.surface }]} // Apply theme-based background color
+      descriptionStyle={{ color: theme.colors.text }} 
+      style={[styles.item, { backgroundColor: theme.colors.surface }]} 
       left={props => (
         item.photoUri ? (
           <Image

@@ -1,3 +1,4 @@
+// Import necessary functions
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as db from '../database';
 
@@ -15,6 +16,12 @@ export const fetchBooks = createAsyncThunk('books/fetchBooks', async () => {
     return books;
 });
 
+// Accept an id parameter
+export const fetchBook = createAsyncThunk('books/fetchBook', async (id) => {
+    const books = await db.getBook(id);
+    return books[0]; // Assuming getBook returns an array with one book
+});
+
 export const addBook = createAsyncThunk('books/addBook', async (book) => {
     await db.saveBook(book);
     return book;
@@ -22,6 +29,11 @@ export const addBook = createAsyncThunk('books/addBook', async (book) => {
 
 export const updateBook = createAsyncThunk('books/updateBook', async (book) => {
     await db.updateBook(book);
+    return book;
+});
+
+export const updateRatingStatus = createAsyncThunk('books/updateRatingStatus', async (book) => {
+    await db.updateRatingStatus(book);
     return book;
 });
 
@@ -53,6 +65,15 @@ const booksSlice = createSlice({
                 state.books = action.payload;
                 state.filteredBooks = sortAndFilterBooks(action.payload, state.sortingPreference, state.searchQuery);
             })
+            .addCase(fetchBook.fulfilled, (state, action) => {
+                state.loading = false;
+                // Updating only the specific book
+                const updatedBook = action.payload;
+                state.books = state.books.map((book) =>
+                    book.id === updatedBook.id ? updatedBook : book
+                );
+                state.filteredBooks = sortAndFilterBooks(state.books, state.sortingPreference, state.searchQuery);
+            })
             .addCase(fetchBooks.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message;
@@ -62,6 +83,13 @@ const booksSlice = createSlice({
                 state.filteredBooks = sortAndFilterBooks(state.books, state.sortingPreference, state.searchQuery);
             })
             .addCase(updateBook.fulfilled, (state, action) => {
+                const index = state.books.findIndex((book) => book.id === action.payload.id);
+                if (index !== -1) {
+                    state.books[index] = action.payload;
+                }
+                state.filteredBooks = sortAndFilterBooks(state.books, state.sortingPreference, state.searchQuery);
+            })
+            .addCase(updateRatingStatus.fulfilled, (state, action) => {
                 const index = state.books.findIndex((book) => book.id === action.payload.id);
                 if (index !== -1) {
                     state.books[index] = action.payload;

@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/ThemeContent';
 import { Provider as PaperProvider, MD3DarkTheme, DefaultTheme } from 'react-native-paper';
 import { Provider as ReduxProvider } from "react-redux";
 import store from "@/components/redux/store"
+import LightControl from './lightControl'
 
 export default function HomeScreen() {
   const [theme, setTheme] = useState('light'); // State to manage theme
@@ -15,6 +16,7 @@ export default function HomeScreen() {
     <ReduxProvider store={store}>
       <ThemeProvider>
         <Layout />
+        <LightControl />
       </ThemeProvider>
     </ReduxProvider>
   );

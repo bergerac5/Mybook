@@ -68,6 +68,7 @@ export default function BookDetails({ navigation }) {
   const handleDelete = async (id) => {
     try {
       await dispatch(deleteBook(id)).unwrap();
+      console.log(`Book with this ${id} deleted successfully`);
     } catch (error) {
       console.log(error);
     }

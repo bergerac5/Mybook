@@ -1,4 +1,3 @@
-// Import necessary functions
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as db from '../database';
 

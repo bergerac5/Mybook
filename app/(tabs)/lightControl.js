@@ -20,7 +20,7 @@ const LightControl = () => {
   useEffect(() => {
     const subscription = LightSensor.addListener(sensorData => {
       const light = sensorData.illuminance;
-      //console.log(`Received light level: ${light} lux`); // Log raw light level
+      console.log(`Received light level: ${light} lux`); // Log raw light level
 
       if (light === 0) {
         console.log('Light level is zero, check your light source or sensor.');
@@ -69,15 +69,9 @@ const LightControl = () => {
       trigger: null, // Trigger immediately
     });
 
-    //console.log(`Notification scheduled with ID: ${notificationId}`);
+    console.log(`Notification scheduled with ID: ${notificationId}`);
   };
 
-  return (
-    <View style={[styles.container, { backgroundColor: `rgba(0,0,0,${1 - brightness})` }]}>
-      <Text style={styles.text}>Current Light Level: {lightLevel.toFixed(2)} lux</Text>
-      <Text style={styles.text}>Brightness Level: {Math.round(brightness * 100)}%</Text>
-    </View>
-  );
 };
 
 const styles = StyleSheet.create({

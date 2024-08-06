@@ -25,7 +25,7 @@ const LightControl = () => {
 
       setLightLevel(light);
 
-      let newBrightness;
+      let newBrightness = brightness; // Use current brightness as default
       let notificationMessage;
 
       if (light < 50 && lastLightLevel >= 50) {
@@ -34,12 +34,9 @@ const LightControl = () => {
       } else if (light > 200 && lastLightLevel <= 200) {
         newBrightness = 1; // Full brightness
         notificationMessage = 'Bright environment detected, increasing app brightness.';
-       } //else {
-      //   newBrightness = Math.max(0.3, Math.min(1, light / 500));
-      //   if (Math.abs(light - lastLightLevel) > 10) { // Significant change
-      //     notificationMessage = `Adjusting app brightness to ${Math.round(newBrightness * 100)}%.`;
-      //   }
-      // }
+      }
+
+      newBrightness = Math.max(0, Math.min(1, newBrightness)); // Ensure brightness is within range
 
       setBrightness(newBrightness);
 

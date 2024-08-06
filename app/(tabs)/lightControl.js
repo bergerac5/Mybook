@@ -16,49 +16,48 @@ Notifications.setNotificationHandler({
 const LightControl = () => {
   const [lightLevel, setLightLevel] = useState(0);
   const [brightness, setBrightness] = useState(1); // Default brightness level
+  const [lastLightLevel, setLastLightLevel] = useState(0);
 
   useEffect(() => {
     const subscription = LightSensor.addListener(sensorData => {
       const light = sensorData.illuminance;
       console.log(`Received light level: ${light} lux`); // Log raw light level
 
-      if (light === 0) {
-        console.log('Light level is zero, check your light source or sensor.');
-      }
-
       setLightLevel(light);
 
-      // Adjust app brightness based on light level
       let newBrightness;
-      if (light < 50) {
+      let notificationMessage;
+
+      if (light < 50 && lastLightLevel >= 50) {
         newBrightness = 0.3; // Dimmed brightness
-        sendNotification('Dark environment detected, decreasing app brightness.');
-      } else if (light > 200) {
+        notificationMessage = 'Dark environment detected, decreasing app brightness.';
+      } else if (light > 200 && lastLightLevel <= 200) {
         newBrightness = 1; // Full brightness
-        sendNotification('Bright environment detected, increasing app brightness.');
-      } else {
-        newBrightness = Math.max(0.3, Math.min(1, light / 500));
-        sendNotification(`Adjusting app brightness to ${Math.round(newBrightness * 100)}%.`);
-      }
+        notificationMessage = 'Bright environment detected, increasing app brightness.';
+       } //else {
+      //   newBrightness = Math.max(0.3, Math.min(1, light / 500));
+      //   if (Math.abs(light - lastLightLevel) > 10) { // Significant change
+      //     notificationMessage = `Adjusting app brightness to ${Math.round(newBrightness * 100)}%.`;
+      //   }
+      // }
 
       setBrightness(newBrightness);
 
-      // Adjust screen brightness
-      if (Platform.OS === 'ios') {
-        Brightness.setBrightnessAsync(newBrightness)
-          .then(() => console.log(`iOS: Brightness set to ${newBrightness}`))
-          .catch(error => console.error('Error setting brightness:', error));
-      } else if (Platform.OS === 'android') {
-        Brightness.setBrightnessAsync(newBrightness)
-          .then(() => console.log(`Android: Brightness set to ${newBrightness}`))
-          .catch(error => console.error('Error setting brightness:', error));
+      if (notificationMessage) {
+        sendNotification(notificationMessage);
       }
+
+      Brightness.setBrightnessAsync(newBrightness)
+        .then(() => console.log(`Brightness set to ${newBrightness}`))
+        .catch(error => console.error('Error setting brightness:', error));
+
+      setLastLightLevel(light);
     });
 
     return () => {
       subscription.remove();
     };
-  }, []);
+  }, [lastLightLevel, brightness]);
 
   const sendNotification = async (message) => {
     const notificationId = await Notifications.scheduleNotificationAsync({
@@ -72,6 +71,7 @@ const LightControl = () => {
     console.log(`Notification scheduled with ID: ${notificationId}`);
   };
 
+  return null;
 };
 
 const styles = StyleSheet.create({

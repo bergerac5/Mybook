@@ -10,13 +10,17 @@ import BookForm from "./bookForm"; // Ensure correct import
 import SettingsScreen from "./settingsScreen";
 import BookDetails from "./bookDetails";
 import BookDetail from "./detail";
+import MotionDetector from './motionDetector'
 import { FontAwesome5 } from "@expo/vector-icons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 
 import { useTheme } from "@/components/ThemeContent";
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
+import SensorData from "./sensorData";
 
 const Drawer = createDrawerNavigator();
 
@@ -118,6 +122,21 @@ const Layout = () => {
             drawerIcon: () => (
               <AntDesign
                 name="setting"
+                size={24}
+                color={theme === "dark" ? "white" : "black"}
+              />
+            ),
+            drawerLabelStyle: { color: theme === "dark" ? "white" : "black" },
+          }}
+        />
+        <Drawer.Screen
+          name="DataDisplay"
+          component={SensorData}
+          options={{
+            drawerLabel: "DataDisplay",
+            title: "DataDisplay",
+            drawerIcon: () => (
+              <MaterialIcons name="auto-awesome-motion"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />

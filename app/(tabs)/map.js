@@ -1,109 +1,127 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Alert } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, Alert, StyleSheet } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 
-const homeLocation = {
-  latitude: -1.8941140,
-  longitude: 30.0564240,
-  latitudeDelta: 0.1,
-  longitudeDelta: 0.1,
-};
+const GEO_FENCES = [
+  { id: 'home', latitude: -1.8938726673711472, longitude: 30.056510471725183, radius: 100 },
+  { id: 'work', latitude: -1.9552169563201052, longitude: 30.103698605723125, radius: 100 },
+];
 
-const geofenceRadius = 10; // 10 meters radius
 
 const LocationTracking = () => {
   const [location, setLocation] = useState(null);
-  const [hasLocationPermission, setHasLocationPermission] = useState(null);
-  const [insideGeofence, setInsideGeofence] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [enteredGeofences, setEnteredGeofences] = useState(new Set());
+  const watchRef = useRef(null);
 
   useEffect(() => {
-    (async () => {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      setHasLocationPermission(status === 'granted');
-
+    const getLocationPermission = async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission required', 'Location permission is needed to use this feature.');
+        setErrorMsg('Permission to access location was denied');
         return;
       }
 
-      Location.watchPositionAsync(
+      watchRef.current = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.High,
-          timeInterval: 1000,
-          distanceInterval: 1,
+          distanceInterval: 10,
         },
-        (newLocation) => {
-          setLocation(newLocation.coords);
-          checkGeofence(newLocation.coords);
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setLocation({ latitude, longitude });
+
+          GEO_FENCES.forEach((fence) => {
+            const distance = getDistanceFromLatLonInKm(latitude, longitude, fence.latitude, fence.longitude);
+            const isInside = distance < fence.radius / 1000;
+
+            if (isInside && !enteredGeofences.has(fence.id)) {
+              Alert.alert(`Entered ${fence.id}`);
+              setEnteredGeofences((prev) => new Set(prev).add(fence.id));
+            } else if (!isInside && enteredGeofences.has(fence.id)) {
+              Alert.alert(`Exited ${fence.id}`);
+              setEnteredGeofences((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(fence.id);
+                return newSet;
+              });
+            }
+          });
         }
       );
-    })();
-  }, []);
+    };
 
-  const checkGeofence = (coords) => {
-    const distance = getDistance(coords, homeLocation);
-    const isInside = distance < geofenceRadius;
+    getLocationPermission();
 
-    if (isInside && !insideGeofence) {
-      // Entered the geofence
-      setInsideGeofence(true);
-      Alert.alert('Geofence Alert', 'You have entered the home area.');
-    } else if (!isInside && insideGeofence) {
-      // Exited the geofence
-      setInsideGeofence(false);
-      Alert.alert('Geofence Alert', 'You have exited the home area.');
-    }
-  };
+    return () => {
+      if (watchRef.current) {
+        watchRef.current.remove();
+      }
+    };
+  }, [enteredGeofences]);
 
-  const getDistance = (coords1, coords2) => {
-    const { latitude: lat1, longitude: lon1 } = coords1;
-    const { latitude: lat2, longitude: lon2 } = coords2;
-    // Calculate distance between two coordinates using Haversine formula
-    const R = 6371e3; // Earth's radius in meters
-    const φ1 = (lat1 * Math.PI) / 180;
-    const φ2 = (lat2 * Math.PI) / 180;
-    const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-    const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-
+  const getDistanceFromLatLonInKm = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Radius of the earth in km
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
     const a =
-      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-      Math.cos(φ1) * Math.cos(φ2) *
-      Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
     return R * c;
   };
 
-  if (!hasLocationPermission) {
-    return <Text>No access to location services.</Text>;
+  let text = 'Waiting..';
+  if (errorMsg) {
+    text = errorMsg;
+  } else if (location) {
+    text = JSON.stringify(location);
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <MapView
-        style={{ flex: 1 }}
-        initialRegion={{
-          ...homeLocation,
-          latitudeDelta: homeLocation.latitudeDelta,
-          longitudeDelta: homeLocation.longitudeDelta,
-        }}
-      >
-        <Marker coordinate={homeLocation} title="Home" />
-        {location && (
-          <>
-            <Marker coordinate={location} pinColor="blue" title="Your Location" />
-            <Circle
-              center={homeLocation}
-              radius={geofenceRadius}
-              strokeColor="rgba(0, 255, 0, 0.5)"
-              fillColor="rgba(0, 255, 0, 0.2)"
-            />
-          </>
-        )}
-      </MapView>
-    </View>
+    <MapView
+  style={styles.map}
+  region={{
+    latitude: location ? location.latitude : -1.9706,
+    longitude: location ? location.longitude : 30.1044,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  }}
+>
+  {GEO_FENCES.map((fence) => (
+    <Circle
+      key={fence.id}
+      center={{ latitude: fence.latitude, longitude: fence.longitude }}
+      radius={fence.radius}
+      strokeColor="rgba(158, 158, 255, 0.3)"
+      fillColor="rgba(158, 158, 255, 0.1)"
+    />
+  ))}
+  {location && (
+    <Marker coordinate={location} title="Your Location" />
+  )}
+</MapView>
+
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  map: {
+    flex: 1,
+    width: '100%',
+  },
+  paragraph: {
+    fontSize: 18,
+    textAlign: 'center',
+  },
+});
 
 export default LocationTracking;

@@ -13,7 +13,7 @@ import BookDetail from "./detail";
 import MotionDetector from './motionDetector'
 import { FontAwesome5 } from "@expo/vector-icons";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import MyMap from './map'
+import LocationTracking from './map'
 
 
 import { useTheme } from "@/components/ThemeContent";
@@ -147,7 +147,7 @@ const Layout = () => {
         />
         <Drawer.Screen
           name="map"
-          component={MyMap}
+          component={LocationTracking}
           options={{
             drawerLabel: "Map",
             title: "Map",

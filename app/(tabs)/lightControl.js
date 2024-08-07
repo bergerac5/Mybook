@@ -19,7 +19,7 @@ const LightControl = () => {
   const [lastLightLevel, setLastLightLevel] = useState(0);
 
   useEffect(() => {
-    const subscription = LightSensor.addListener(sensorData => {
+    const handleSensorData = (sensorData) => {
       const light = sensorData.illuminance;
       console.log(`Received light level: ${light} lux`); // Log raw light level
 
@@ -28,6 +28,7 @@ const LightControl = () => {
       let newBrightness = brightness; // Use current brightness as default
       let notificationMessage;
 
+      // Adjust brightness based on light level changes
       if (light < 50 && lastLightLevel >= 50) {
         newBrightness = 0.3; // Dimmed brightness
         notificationMessage = 'Dark environment detected, decreasing app brightness.';
@@ -38,23 +39,27 @@ const LightControl = () => {
 
       newBrightness = Math.max(0, Math.min(1, newBrightness)); // Ensure brightness is within range
 
-      setBrightness(newBrightness);
+      if (newBrightness !== brightness) { // Update only if brightness changes
+        setBrightness(newBrightness);
 
-      if (notificationMessage) {
-        sendNotification(notificationMessage);
+        Brightness.setBrightnessAsync(newBrightness)
+          .then(() => console.log(`Brightness set to ${newBrightness}`))
+          .catch(error => console.error('Error setting brightness:', error));
+
+        if (notificationMessage) {
+          sendNotification(notificationMessage);
+        }
       }
 
-      Brightness.setBrightnessAsync(newBrightness)
-        .then(() => console.log(`Brightness set to ${newBrightness}`))
-        .catch(error => console.error('Error setting brightness:', error));
-
       setLastLightLevel(light);
-    });
+    };
+
+    const subscription = LightSensor.addListener(handleSensorData);
 
     return () => {
       subscription.remove();
     };
-  }, [lastLightLevel, brightness]);
+  }, [brightness, lastLightLevel]); // Ensure effect runs when these values change
 
   const sendNotification = async (message) => {
     const notificationId = await Notifications.scheduleNotificationAsync({

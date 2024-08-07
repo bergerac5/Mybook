@@ -13,6 +13,7 @@ import BookDetail from "./detail";
 import MotionDetector from './motionDetector'
 import { FontAwesome5 } from "@expo/vector-icons";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MyMap from './map'
 
 
 import { useTheme } from "@/components/ThemeContent";
@@ -137,6 +138,21 @@ const Layout = () => {
             title: "DataDisplay",
             drawerIcon: () => (
               <MaterialIcons name="auto-awesome-motion"
+                size={24}
+                color={theme === "dark" ? "white" : "black"}
+              />
+            ),
+            drawerLabelStyle: { color: theme === "dark" ? "white" : "black" },
+          }}
+        />
+        <Drawer.Screen
+          name="map"
+          component={MyMap}
+          options={{
+            drawerLabel: "Map",
+            title: "Map",
+            drawerIcon: () => (
+              <FontAwesome name="map-marker"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />

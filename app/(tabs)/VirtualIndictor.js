@@ -8,6 +8,10 @@ const VirtualIndicators = ({ data }) => {
   const margin = 20;
   const indicatorRadius = 10;
 
+  // Define colors for circles and bars
+  const circleColor = 'yellow'; // Color for the indicator circles
+  const barColor = 'rgba(0, 255, 0, 0.3)'; // Color for the bars
+
   if (data.length === 0) {
     return <Text>No data available</Text>;
   }
@@ -31,7 +35,7 @@ const VirtualIndicators = ({ data }) => {
               cx={isNaN(cx) ? 0 : cx} // Fallback to 0 if NaN
               cy={isNaN(cy) ? 0 : cy} // Fallback to 0 if NaN
               r={indicatorRadius}
-              fill="blue"
+              fill={circleColor} // Custom color for circles
               stroke="black"
               strokeWidth="1"
             />
@@ -51,7 +55,7 @@ const VirtualIndicators = ({ data }) => {
               y={isNaN(y) ? 0 : y} // Fallback to 0 if NaN
               width={indicatorRadius}
               height={isNaN(heightValue) ? 0 : heightValue} // Fallback to 0 if NaN
-              fill="rgba(0, 0, 255, 0.3)"
+              fill={barColor} // Custom color for bars
             />
           );
         })}

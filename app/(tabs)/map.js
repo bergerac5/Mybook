@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet } from 'react-native';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
 
@@ -7,7 +7,6 @@ const GEO_FENCES = [
   { id: 'home', latitude: -1.8938726673711472, longitude: 30.056510471725183, radius: 100 },
   { id: 'work', latitude: -1.9552169563201052, longitude: 30.103698605723125, radius: 100 },
 ];
-
 
 const LocationTracking = () => {
   const [location, setLocation] = useState(null);
@@ -73,54 +72,46 @@ const LocationTracking = () => {
     return R * c;
   };
 
-  let text = 'Waiting..';
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
-  }
-
   return (
     <MapView
-  style={styles.map}
-  region={{
-    latitude: location ? location.latitude : -1.9706,
-    longitude: location ? location.longitude : 30.1044,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  }}
->
-  {GEO_FENCES.map((fence) => (
-    <Circle
-      key={fence.id}
-      center={{ latitude: fence.latitude, longitude: fence.longitude }}
-      radius={fence.radius}
-      strokeColor="rgba(158, 158, 255, 0.3)"
-      fillColor="rgba(158, 158, 255, 0.1)"
-    />
-  ))}
-  {location && (
-    <Marker coordinate={location} title="Your Location" />
-  )}
-</MapView>
-
+      style={styles.map}
+      region={{
+        latitude: location ? location.latitude : -1.9706,
+        longitude: location ? location.longitude : 30.1044,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      }}
+    >
+      {GEO_FENCES.map((fence) => (
+        <React.Fragment key={fence.id}>
+          <Circle
+            center={{ latitude: fence.latitude, longitude: fence.longitude }}
+            radius={fence.radius}
+            strokeColor="rgba(158, 158, 255, 0.3)"
+            fillColor="rgba(158, 158, 255, 0.1)"
+          />
+          <Marker
+            coordinate={{ latitude: fence.latitude, longitude: fence.longitude }}
+            title={fence.id.charAt(0).toUpperCase() + fence.id.slice(1)}
+            pinColor="blue" // Blue color for geofence markers
+          />
+        </React.Fragment>
+      ))}
+      {location && (
+        <Marker
+          coordinate={location}
+          title="Your Location"
+          pinColor="red" // Red color for the current location marker
+        />
+      )}
+    </MapView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
   map: {
     flex: 1,
     width: '100%',
-  },
-  paragraph: {
-    fontSize: 18,
-    textAlign: 'center',
   },
 });
 

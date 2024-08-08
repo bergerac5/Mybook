@@ -5,23 +5,22 @@ import { FontAwesome } from "@expo/vector-icons";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Feather } from "@expo/vector-icons";
 import { AntDesign } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+
 import BookList from "./bookList";
-import BookForm from "./bookForm"; // Ensure correct import
+import BookForm from "./bookForm";
 import SettingsScreen from "./settingsScreen";
 import BookDetails from "./bookDetails";
 import BookDetail from "./detail";
-import MotionDetector from './motionDetector'
-import { FontAwesome5 } from "@expo/vector-icons";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import LocationTracking from './map'
-
-
+import MotionDetector from './motionDetector';
+import LocationTracking from './map';
+import SensorData from "./sensorData";
 import { useTheme } from "@/components/ThemeContent";
 import {
   DrawerContentScrollView,
   DrawerItemList,
 } from "@react-navigation/drawer";
-import SensorData from "./sensorData";
 
 const Drawer = createDrawerNavigator();
 
@@ -57,7 +56,7 @@ const Layout = () => {
             title: "Home",
             drawerIcon: () => (
               <Ionicons
-                name="home"
+                name="home-outline"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />
@@ -67,13 +66,13 @@ const Layout = () => {
         />
         <Drawer.Screen
           name="Edit"
-          component={BookForm} // Ensure correct component assignment
+          component={BookForm}
           options={{
             drawerLabel: "Add/Edit Book",
             title: "Add/Edit Book",
             drawerIcon: () => (
               <Feather
-                name="edit"
+                name="plus-square"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />
@@ -89,7 +88,7 @@ const Layout = () => {
             title: "Details",
             drawerIcon: () => (
               <FontAwesome
-                name="book"
+                name="info-circle"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />
@@ -105,7 +104,7 @@ const Layout = () => {
             title: "Book Details",
             drawerIcon: () => (
               <FontAwesome5
-                name="book-reader"
+                name="book-open"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />
@@ -118,8 +117,8 @@ const Layout = () => {
           name="Setting"
           component={SettingsScreen}
           options={{
-            drawerLabel: "Setting",
-            title: "Setting",
+            drawerLabel: "Settings",
+            title: "Settings",
             drawerIcon: () => (
               <AntDesign
                 name="setting"
@@ -134,10 +133,11 @@ const Layout = () => {
           name="DataDisplay"
           component={SensorData}
           options={{
-            drawerLabel: "DataDisplay",
-            title: "DataDisplay",
+            drawerLabel: "Sensor Data",
+            title: "Sensor Data",
             drawerIcon: () => (
-              <MaterialIcons name="auto-awesome-motion"
+              <MaterialIcons
+                name="data-usage"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />
@@ -146,13 +146,14 @@ const Layout = () => {
           }}
         />
         <Drawer.Screen
-          name="map"
+          name="Map"
           component={LocationTracking}
           options={{
             drawerLabel: "Map",
             title: "Map",
             drawerIcon: () => (
-              <FontAwesome name="map-marker"
+              <FontAwesome
+                name="map"
                 size={24}
                 color={theme === "dark" ? "white" : "black"}
               />

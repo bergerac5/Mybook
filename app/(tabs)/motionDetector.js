@@ -6,9 +6,10 @@ import * as Notifications from 'expo-notifications';
 // Request notification permissions
 Notifications.requestPermissionsAsync();
 
-const ShakeDetector = () => {
-  const [shakeCount, setShakeCount] = useState(0);
+const LiftDetector = () => {
+  const [liftCount, setLiftCount] = useState(0);
   const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [lastZ, setLastZ] = useState(0);
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(100); // Update every 100ms
@@ -20,32 +21,38 @@ const ShakeDetector = () => {
       // Calculate acceleration magnitude
       const magnitude = Math.sqrt(x ** 2 + y ** 2 + z ** 2);
 
-      // Check if it's a shake
-      if (magnitude > 2.5 && now - lastUpdate > 500) {
-        // If detected shake, update last shake time
-        setLastUpdate(now);
-        setShakeCount(prevCount => {
-          const newCount = prevCount + 1;
+      // Detect significant upward movement (lift)
+      if (now - lastUpdate > 500) {
+        if (z > lastZ + 1.5) { // Threshold for detecting a lift
+          setLastUpdate(now);
+          setLastZ(z);
           
-          // If three shakes are detected, send a notification
-          if (newCount >= 3) {
-            sendNotification('CTU altered!');
-            return 0; // Reset the count after sending notification
-          }
-          
-          return newCount;
-        });
+          setLiftCount(prevCount => {
+            const newCount = prevCount + 1;
+            
+            // If three lifts are detected, send a notification
+            if (newCount >= 2) {
+              sendNotification('CTU altered!');
+              return 0; // Reset the count after sending notification
+            }
+            
+            return newCount;
+          });
+        }
       }
+
+      // Update lastZ value
+      setLastZ(z);
     });
 
     return () => subscription.remove();
-  }, [lastUpdate]);
+  }, [lastUpdate, lastZ]);
 
   // Function to send notifications
   const sendNotification = async (message) => {
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Shake Detected',
+        title: 'Lift Detected',
         body: message,
       },
       trigger: null,
@@ -66,4 +73,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ShakeDetector;
+export default LiftDetector;
